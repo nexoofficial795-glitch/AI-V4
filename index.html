@@ -3,30 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Muthi AI | v4</title>
+    <title>Muthi AI | v4.1 Fixed</title>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         :root { --accent: #007AFF; --bg: #0A0A0C; --glass: rgba(28, 28, 30, 0.95); --border: rgba(255, 255, 255, 0.15); }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
         body { margin: 0; background: var(--bg); font-family: -apple-system, system-ui, sans-serif; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; color: #fff; }
-        header { padding: 18px 20px; background: var(--glass); backdrop-filter: blur(40px) saturate(210%); border-bottom: 0.5px solid var(--border); display: flex; justify-content: space-between; align-items: center; z-index: 100; flex-shrink: 0; }
+        header { padding: 18px 20px; background: var(--glass); backdrop-filter: blur(40px) saturate(210%); border-bottom: 0.5px solid var(--border); display: flex; justify-content: space-between; align-items: center; z-index: 100; }
         .logo h1 { margin: 0; font-size: 1.45rem; font-weight: 900; letter-spacing: -1.2px; background: linear-gradient(#fff, #A2A2A2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .logo span { color: var(--accent); }
-        .new-btn { background: rgba(255, 255, 255, 0.1); color: #fff; border: 0.5px solid var(--border); padding: 7px 15px; border-radius: 18px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+        .new-btn { background: rgba(255, 255, 255, 0.1); color: #fff; border: 0.5px solid var(--border); padding: 7px 15px; border-radius: 18px; font-weight: 600; cursor: pointer; }
         #canvas { flex: 1; overflow-y: auto; padding: 20px 16px 220px; display: flex; flex-direction: column; gap: 18px; scroll-behavior: smooth; }
-        .msg { max-width: 88%; display: flex; flex-direction: column; animation: iosPop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1); }
-        .bubble { padding: 14px 18px; border-radius: 24px; font-size: 1.05rem; line-height: 1.6; word-wrap: break-word; }
-        .ai { align-self: flex-start; } .ai .bubble { background: rgba(255,255,255,0.08); border: 0.5px solid var(--border); border-bottom-left-radius: 6px; }
-        .user { align-self: flex-end; } .user .bubble { background: var(--accent); color: #fff; border-bottom-right-radius: 6px; box-shadow: 0 8px 25px rgba(0, 122, 255, 0.3); }
+        .msg { max-width: 88%; display: flex; flex-direction: column; animation: iosPop 0.4s ease-out; }
+        .bubble { padding: 14px 18px; border-radius: 22px; font-size: 1.05rem; line-height: 1.6; word-wrap: break-word; }
+        .ai { align-self: flex-start; } .ai .bubble { background: rgba(255,255,255,0.08); border: 0.5px solid var(--border); border-bottom-left-radius: 4px; }
+        .user { align-self: flex-end; } .user .bubble { background: var(--accent); color: #fff; border-bottom-right-radius: 4px; }
         .chat-img { width: 100%; border-radius: 18px; margin-bottom: 8px; border: 0.5px solid var(--border); }
-        #preview-wrap { display: none; padding: 10px; background: var(--glass); border-radius: 14px; border: 1px solid var(--accent); width: 85px; height: 85px; position: absolute; bottom: 110px; left: 20px; z-index: 80; }
-        #view-img { width: 100%; height: 100%; border-radius: 8px; object-fit: cover; }
-        .dock { position: fixed; bottom: 0; width: 100%; padding: 10px 16px 40px; background: linear-gradient(transparent, var(--bg) 50%); z-index: 90; }
-        .pill { max-width: 720px; margin: 0 auto; display: flex; align-items: center; background: rgba(44, 44, 46, 0.98); backdrop-filter: blur(50px); border-radius: 35px; border: 0.5px solid var(--border); padding: 7px 15px; }
-        textarea { flex: 1; border: none; background: transparent; padding: 10px; font-size: 1.15rem; resize: none; max-height: 180px; color: #fff; }
-        .icon-btn { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 50%; }
-        .send-pill { background: #fff; border: none; }
-        @keyframes iosPop { from { opacity: 0; transform: scale(0.95) translateY(15px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        .dock { position: fixed; bottom: 0; width: 100%; padding: 10px 16px 40px; background: linear-gradient(transparent, var(--bg) 60%); }
+        .pill { max-width: 720px; margin: 0 auto; display: flex; align-items: center; background: #1C1C1E; border-radius: 35px; border: 0.5px solid var(--border); padding: 7px 15px; }
+        textarea { flex: 1; border: none; background: transparent; padding: 10px; font-size: 1.1rem; color: #fff; resize: none; max-height: 150px; }
+        .icon-btn { width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 50%; border: none; }
+        .send-pill { background: #fff; color: #000; }
+        @keyframes iosPop { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -35,19 +33,15 @@
         <button class="new-btn" onclick="startNewChat()">New Chat</button>
     </header>
     <main id="canvas"></main>
-    <div id="preview-wrap">
-        <img id="view-img" src="">
-        <div style="position:absolute;top:-8px;right:-8px;background:#fff;color:#000;border-radius:50%;width:20px;height:20px;display:flex;justify-content:center;align-items:center;font-size:12px;cursor:pointer" onclick="clearPreview()">✕</div>
-    </div>
     <div class="dock">
         <div class="pill">
             <label class="icon-btn" style="color: var(--accent);">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
                 <input type="file" id="f-in" hidden accept="image/*" onchange="previewMedia(this)">
             </label>
             <textarea id="inp" rows="1" placeholder="Ask any wahang..." oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
             <button class="send-pill icon-btn" onclick="submit()">
-                <svg viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" fill="#000"></path></svg>
+                <svg viewBox="0 0 24 24" width="24" height="24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" fill="currentColor"></path></svg>
             </button>
         </div>
     </div>
@@ -55,9 +49,9 @@
     <script>
         let imgBuffer = null;
         let chatHistory = [];
-        const DB = 'MUTHI_OBSIDIAN_V28';
+        const DB = 'MUTHI_V4_STORE';
         
-        // Use a FRESH key. This key is for demonstration; if it fails, generate a new one at openrouter.ai/keys
+        // Use this key or your own fresh key from openrouter.ai
         const API_KEY = "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";
 
         window.onload = () => {
@@ -66,25 +60,19 @@
                 chatHistory = JSON.parse(saved);
                 chatHistory.forEach(m => renderDOM(m.role, m.text, m.img));
             }
-            if (chatHistory.length === 0) render('ai', "ꯈꯨꯔꯨꯝꯖꯔꯤ **Thounaojam Macmilan** Sir! **Muthi AI v4** active oire. 💎");
+            if (chatHistory.length === 0) render('ai', "ꯈꯨꯔꯨꯝꯖꯔꯤ **Thounaojam Macmilan** Sir! **Muthi AI v4.1** is ready to help you. 💎");
         };
 
-        function startNewChat() { if(confirm("Start fresh?")) { localStorage.removeItem(DB); location.reload(); } }
+        function startNewChat() { if(confirm("Clear history?")) { localStorage.removeItem(DB); location.reload(); } }
 
         function previewMedia(input) {
             const file = input.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = (e) => { 
-                    imgBuffer = e.target.result;
-                    document.getElementById('view-img').src = imgBuffer;
-                    document.getElementById('preview-wrap').style.display = 'block';
-                };
+                reader.onload = (e) => { imgBuffer = e.target.result; alert("Image attached! 📸"); };
                 reader.readAsDataURL(file);
             }
         }
-
-        function clearPreview() { imgBuffer = null; document.getElementById('preview-wrap').style.display = 'none'; }
 
         async function submit() {
             const input = document.getElementById('inp');
@@ -92,20 +80,19 @@
             if(!val && !imgBuffer) return;
             const capturedImg = imgBuffer;
             render('user', val, capturedImg);
-            input.value = ""; input.style.height = 'auto';
-            clearPreview();
+            input.value = ""; input.style.height = 'auto'; imgBuffer = null;
+            
             const context = chatHistory.slice(-6).map(m => ({ role: m.role === 'ai' ? 'assistant' : 'user', content: m.text }));
             try {
-                const result = await fetchAI(val, capturedImg, context);
-                render('ai', result);
-            } catch (e) { render('ai', "System handshake error. ⚠️"); }
+                const response = await fetchAI(val, capturedImg, context);
+                render('ai', response);
+            } catch (e) { render('ai', "Error connecting to AI. Please check your key. ⚠️"); }
         }
 
         async function fetchAI(q, img, ctx) {
-            const sys = "You are Muthi AI, engineered by Thounaojam Macmilan. MISSION: Provide 100% accurate, perfect answers. BILINGUAL: Always reply in Meiteilon (Meitei Mayek) FIRST, then English SECOND.";
-            let messages = [{ role: "system", content: sys }];
-            ctx.forEach(c => messages.push(c));
-            let userContent = [{ type: "text", text: q || "Explain this." }];
+            const sys = "You are Muthi AI by Macmilan. Reply in Meiteilon + English.";
+            let messages = [{ role: "system", content: sys }, ...ctx];
+            let userContent = [{ type: "text", text: q || "Explain this image." }];
             if(img) userContent.push({ type: "image_url", image_url: { url: img } });
             messages.push({ role: "user", content: userContent });
 
@@ -113,9 +100,14 @@
                 method: "POST",
                 headers: { 
                     "Authorization": "Bearer " + API_KEY, 
-                    "Content-Type": "application/json" 
+                    "Content-Type": "application/json",
+                    "HTTP-Referer": "https://vercel.app", 
+                    "X-Title": "Muthi AI"
                 },
-                body: JSON.stringify({ model: "google/gemini-2.0-flash-001", messages: messages })
+                body: JSON.stringify({ 
+                    model: "google/gemini-2.0-flash-lite-preview-02-05:free", 
+                    messages: messages 
+                })
             });
             const d = await r.json();
             if (d.error) return "Error: " + d.error.message;
@@ -136,7 +128,7 @@
         function render(role, text, img = null) {
             renderDOM(role, text, img);
             chatHistory.push({ role, text, img });
-            localStorage.setItem(DB, JSON.stringify(chatHistory.slice(-15)));
+            localStorage.setItem(DB, JSON.stringify(chatHistory.slice(-10)));
         }
     </script>
 </body>
