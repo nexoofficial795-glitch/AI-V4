@@ -134,7 +134,7 @@
             try {
                 const r = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                     method: "POST",
-                    headers: { "Authorization": `Bearer {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}`, "Content-Type": "application/json" },
+                    headers: { "Authorization": `Bearer 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}`, "Content-Type": "application/json",
                     body: JSON.stringify({ model: "google/gemini-2.0-flash-001", messages: messages })
                 });
                 const d = await r.json();
