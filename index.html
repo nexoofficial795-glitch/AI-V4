@@ -113,8 +113,6 @@
             render('user', val, capturedImg);
             input.value = ""; input.style.height = 'auto';
             clearPreview();
-
-            const key = localStorage.getItem(VAULT);
         
 
             const context = chatHistory.slice(-6).map(m => ({ role: m.role === 'ai' ? 'assistant' : 'user', content: m.text }));
