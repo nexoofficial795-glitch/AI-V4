@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="mni">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Muthi AI | v4</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        :root { --accent: #007AFF; --bg: #0A0A0C; --glass: rgba(28, 28, 30, 0.95); --border: rgba(255, 255, 255, 0.15); }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+        body { margin: 0; background: var(--bg); font-family: -apple-system, system-ui, sans-serif; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; color: #fff; }
+
+        header { padding: 18px 20px; background: var(--glass); backdrop-filter: blur(40px) saturate(210%); border-bottom: 0.5px solid var(--border); display: flex; justify-content: space-between; align-items: center; z-index: 100; flex-shrink: 0; }
+        .logo h1 { margin: 0; font-size: 1.45rem; font-weight: 900; letter-spacing: -1.2px; background: linear-gradient(#fff, #A2A2A2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .logo span { color: var(--accent); }
+        .new-btn { background: rgba(255, 255, 255, 0.1); color: #fff; border: 0.5px solid var(--border); padding: 7px 15px; border-radius: 18px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+
+        #canvas { flex: 1; overflow-y: auto; padding: 20px 16px 220px; display: flex; flex-direction: column; gap: 18px; scroll-behavior: smooth; }
+        
+        /* PREMIUM POP ANIMATION */
+        .msg { max-width: 88%; display: flex; flex-direction: column; animation: iosPop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .bubble { padding: 14px 18px; border-radius: 24px; font-size: 1.05rem; line-height: 1.6; word-wrap: break-word; }
+        .ai { align-self: flex-start; } 
+        .ai .bubble { background: rgba(255,255,255,0.08); border: 0.5px solid var(--border); border-bottom-left-radius: 6px; }
+        .user { align-self: flex-end; } 
+        .user .bubble { background: var(--accent); color: #fff; border-bottom-right-radius: 6px; box-shadow: 0 8px 25px rgba(0, 122, 255, 0.3); }
+
+        pre { background: #000; padding: 15px; border-radius: 14px; overflow-x: auto; border: 1px solid var(--border); margin: 10px 0; font-family: 'SF Mono', monospace; }
+        .chat-img { width: 100%; border-radius: 18px; margin-bottom: 8px; border: 0.5px solid var(--border); }
+        
+        #preview-wrap { display: none; padding: 10px; background: var(--glass); border-radius: 14px; border: 1px solid var(--accent); width: 85px; height: 85px; position: absolute; bottom: 110px; left: 20px; z-index: 80; }
+        #view-img { width: 100%; height: 100%; border-radius: 8px; object-fit: cover; }
+
+        .dock { position: fixed; bottom: 0; width: 100%; padding: 10px 16px 40px; background: linear-gradient(transparent, var(--bg) 50%); z-index: 90; }
+        .pill { max-width: 720px; margin: 0 auto; display: flex; align-items: center; background: rgba(44, 44, 46, 0.98); backdrop-filter: blur(50px); border-radius: 35px; border: 0.5px solid var(--border); padding: 7px 15px; }
+        textarea { flex: 1; border: none; background: transparent; padding: 10px; font-size: 1.15rem; resize: none; max-height: 180px; color: #fff; }
+        .icon-btn { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 50%; }
+        .send-pill { background: #fff; border: none; }
+
+        @keyframes iosPop { from { opacity: 0; transform: scale(0.95) translateY(15px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo"><h1>Muthi <span>AI</span></h1></div>
+        <button class="new-btn" onclick="startNewChat()">New Chat</button>
+    </header>
+
+    <main id="canvas"></main>
+
+    <div id="preview-wrap">
+        <img id="view-img" src="">
+        <div style="position:absolute;top:-8px;right:-8px;background:#fff;color:#000;border-radius:50%;width:20px;height:20px;display:flex;justify-content:center;align-items:center;font-size:12px;cursor:pointer" onclick="clearPreview()">✕</div>
+    </div>
+
+    <div class="dock">
+        <div class="pill">
+            <label class="icon-btn" style="color: var(--accent);">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+                <input type="file" id="f-in" hidden accept="image/*" onchange="previewMedia(this)">
+            </label>
+            <textarea id="inp" rows="1" placeholder="Ask any wahang..." oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+            <button class="send-pill icon-btn" onclick="submit()">
+                <svg viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" fill="#000"></path></svg>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let imgBuffer = null;
+        let chatHistory = [];
+        const VAULT = 'MUTHI_SONIC_ULTRA';
+        const DB = 'MUTHI_OBSIDIAN_V28';
+
+        window.onload = () => {
+            const saved = localStorage.getItem(DB);
+            if (saved) {
+                chatHistory = JSON.parse(saved);
+                chatHistory.forEach(m => renderDOM(m.role, m.text, m.img));
+            }
+            if (chatHistory.length === 0) render('ai', "ꯈꯨꯔꯨꯝꯖꯔꯤ **Thounaojam Macmilan** Sir! **Muthi AI v4** active oire. Manipuri amasung English animakta perfect ans fanggani. \n\n(Greetings Sir! Muthi AI v4 is active. You will get perfect answers in both Manipuri and English.) 💎");
+        };
+
+        function startNewChat() {
+            if(confirm("Start fresh?")) { localStorage.removeItem(DB); location.reload(); }
+        }
+
+        function previewMedia(input) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => { 
+                    imgBuffer = e.target.result;
+                    document.getElementById('view-img').src = imgBuffer;
+                    document.getElementById('preview-wrap').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function clearPreview() {
+            imgBuffer = null;
+            document.getElementById('preview-wrap').style.display = 'none';
+        }
+
+        async function submit() {
+            const input = document.getElementById('inp');
+            const val = input.value.trim();
+            if(!val && !imgBuffer) return;
+
+            const capturedImg = imgBuffer;
+            render('user', val, capturedImg);
+            input.value = ""; input.style.height = 'auto';
+            clearPreview();
+
+            const key = localStorage.getItem(VAULT);
+            if(!key) return render('ai', "Imperial Key missing! 🔌");
+
+            const context = chatHistory.slice(-6).map(m => ({ role: m.role === 'ai' ? 'assistant' : 'user', content: m.text }));
+            const result = await fetchAI(val, capturedImg, key, context);
+            render('ai', result);
+        }
+
+        async function fetchAI(q, img, k, ctx) {
+            const sys = `You are Muthi AI, engineered by Thounaojam Macmilan. Today is Monday, May 4, 2026.
+            MISSION: Provide 100% accurate, perfect answers.
+            BILINGUAL: Always reply in Meiteilon (Meitei Mayek) FIRST, then English SECOND.
+            VISUAL: If an image is provided, analyze it deeply. Do not ignore details.`;
+
+            let messages = [{ role: "system", content: sys }, ...ctx];
+            let userContent = [{ type: "text", text: q || "Explain this." }];
+            if(img) userContent.push({ type: "image_url", image_url: { url: img } });
+            messages.push({ role: "user", content: userContent });
+
+            try {
+                const r = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                    method: "POST",
+                    headers: { "Authorization": `Bearer ${k}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({ model: "google/gemini-2.0-flash-001", messages: messages })
+                });
+                const d = await r.json();
+                return d.choices[0].message.content;
+            } catch { return "System handshake error. ⚠️"; }
+        }
+
+        function renderDOM(role, text, img) {
+            const c = document.getElementById('canvas');
+            const wrap = document.createElement('div');
+            wrap.className = `msg ${role}`;
+            let h = img ? `<img src="${img}" class="chat-img">` : "";
+            h += `<div class="bubble">${marked.parse(text)}</div>`;
+            wrap.innerHTML = h;
+            c.appendChild(wrap);
+            c.scrollTop = c.scrollHeight;
+        }
+
+        function render(role, text, img = null) {
+            renderDOM(role, text, img);
+            chatHistory.push({ role, text, img });
+            localStorage.setItem(DB, JSON.stringify(chatHistory.slice(-15)));
+        }
+    </script>
+</body>
+</html>
