@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Muthi AI | v4.1 Fixed</title>
+    <title>Muthi AI | v4.2 Final</title>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         :root { --accent: #007AFF; --bg: #0A0A0C; --glass: rgba(28, 28, 30, 0.95); --border: rgba(255, 255, 255, 0.15); }
@@ -49,9 +49,9 @@
     <script>
         let imgBuffer = null;
         let chatHistory = [];
-        const DB = 'MUTHI_V4_STORE';
+        const DB = 'MUTHI_V4_FINAL';
         
-        // Use this key or your own fresh key from openrouter.ai
+        // Ensure this key is active on OpenRouter
         const API_KEY = "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";
 
         window.onload = () => {
@@ -60,16 +60,16 @@
                 chatHistory = JSON.parse(saved);
                 chatHistory.forEach(m => renderDOM(m.role, m.text, m.img));
             }
-            if (chatHistory.length === 0) render('ai', "ꯈꯨꯔꯨꯝꯖꯔꯤ **Thounaojam Macmilan** Sir! **Muthi AI v4.1** is ready to help you. 💎");
+            if (chatHistory.length === 0) render('ai', "ꯈꯨꯔꯨꯝꯖꯔꯤ **Thounaojam Macmilan** Sir! **Muthi AI v4.2** updated and ready. 💎");
         };
 
-        function startNewChat() { if(confirm("Clear history?")) { localStorage.removeItem(DB); location.reload(); } }
+        function startNewChat() { if(confirm("Clear chat?")) { localStorage.removeItem(DB); location.reload(); } }
 
         function previewMedia(input) {
             const file = input.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = (e) => { imgBuffer = e.target.result; alert("Image attached! 📸"); };
+                reader.onload = (e) => { imgBuffer = e.target.result; alert("Image ready! 📸"); };
                 reader.readAsDataURL(file);
             }
         }
@@ -86,13 +86,13 @@
             try {
                 const response = await fetchAI(val, capturedImg, context);
                 render('ai', response);
-            } catch (e) { render('ai', "Error connecting to AI. Please check your key. ⚠️"); }
+            } catch (e) { render('ai', "Connection error. ⚠️"); }
         }
 
         async function fetchAI(q, img, ctx) {
-            const sys = "You are Muthi AI by Macmilan. Reply in Meiteilon + English.";
+            const sys = "You are Muthi AI. Reply in Meiteilon + English.";
             let messages = [{ role: "system", content: sys }, ...ctx];
-            let userContent = [{ type: "text", text: q || "Explain this image." }];
+            let userContent = [{ type: "text", text: q || "Explain this." }];
             if(img) userContent.push({ type: "image_url", image_url: { url: img } });
             messages.push({ role: "user", content: userContent });
 
@@ -100,12 +100,10 @@
                 method: "POST",
                 headers: { 
                     "Authorization": "Bearer " + API_KEY, 
-                    "Content-Type": "application/json",
-                    "HTTP-Referer": "https://vercel.app", 
-                    "X-Title": "Muthi AI"
+                    "Content-Type": "application/json"
                 },
                 body: JSON.stringify({ 
-                    model: "google/gemini-2.0-flash-lite-preview-02-05:free", 
+                    model: "google/gemini-2.0-flash-lite-preview-02-05", 
                     messages: messages 
                 })
             });
